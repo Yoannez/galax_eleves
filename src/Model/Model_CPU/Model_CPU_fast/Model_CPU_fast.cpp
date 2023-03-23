@@ -112,10 +112,10 @@ articles.x[j] - particles.x[i
 
 				b_type dij = diffx * diffx + diffy * diffy + diffz * diffz;
 
-				b_type dij_sqrt = xs::sqrt(dij);
-				b_type dij_real = 10.0 / (dij_sqrt * dij_sqrt * dij_sqrt);
+				b_type dij_rsqrt = xs::sqrt(dij);
+				b_type dij_real = 10.0 / (dij_rsqrt * dij_rsqrt * dij_rsqrt);
 
-				dij = select(lt(dij, b_type::broadcast(1.0)), b_type::broadcast(10.0), dij_real);
+				dij = xs::fmin( b_type::broadcast(10.0), dij_real);
 
 				raccx_i += diffx * dij * rmas_j;
 				raccy_i += diffy * dij * rmas_j;
