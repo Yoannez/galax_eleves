@@ -24,43 +24,45 @@ void Model_CPU_fast
     std::fill(accelerationsz.begin(), accelerationsz.end(), 0);
 
 // OMP  version
-/*#pragma omp parallel for
-    for (int i = 0; i < n_particles; i ++){
-        for (int j = 0; j < n_particles; j++){particles
-            if(i != j){
-				const float diffx = particles.x[j] - particles.x[i];
-				const float diffy = particles.y[j] - particles.y[i];
-				const float diffz = particles.z[j] - particles.z[i];
+// #pragma omp parallel for
+//     for (int i = 0; i < n_particles; i ++){
+//         for (int j = 0; j < n_particles; j++){
+//             if(i != j){
+// 				const float diffx = particles.x[j] - particles.x[i];
+// 				const float diffy = particles.y[j] - particles.y[i];
+// 				const float diffz = particles.z[j] - particles.z[i];
 
-				float dij = diffx * diffx + diffy * diffy + diffz * diffz;
+// 				float dij = diffx * diffx + diffy * diffy + diffz * diffz;
 
-				if (dij < 1.0)
-				{
-					dij = 10.0;
-				}
-				else
-				{
-					dij = std::sqrt(dij);
-					dij = 10.0 / (dij * dij * dij);
-				}
+// 				if (dij < 1.0)
+// 				{
+// 					dij = 10.0;
+// 				}
+// 				else
+// 				{
+// 					dij = std::sqrt(dij);
+// 					dij = 10.0 / (dij * dij * dij);
+// 				}
 
-				accelerationsx[i] += diffx * dij * initstate.masses[j];
-				accelerationsy[i] += diffy * dij * initstate.masses[j];
-				accelerationsz[i] += diffz * dij * initstate.masses[j];
-			}
-        }
-     }
-articles.x[j] - particles.x[i
-#pragma omp parallel for
-    for (int i = 0; i < n_particles; i++)
-	{
-		velocitiesx[i] += accelerationsx[i] * 2.0f;
-		velocitiesy[i] += accelerationsy batch<T, A> const &y) n [i] * 0.1f;
-	}
+// 				accelerationsx[i] += diffx * dij * initstate.masses[j];
+// 				accelerationsy[i] += diffy * dij * initstate.masses[j];
+// 				accelerationsz[i] += diffz * dij * initstate.masses[j];
+// 			}
+//         }
+//      }
+// #pragma omp parallel for
+//     for (int i = 0; i < n_particles; i++)
+// 	{
+// 		velocitiesx[i] += accelerationsx[i] * 2.0f;
+// 		velocitiesy[i] += accelerationsy[i] * 2.0f;
+// 		velocitiesz[i] += accelerationsz[i] * 2.0f;
+// 		particles.x[i] += velocitiesx   [i] * 0.1f;
+// 		particles.y[i] += velocitiesy   [i] * 0.1f;
+// 		particles.z[i] += velocitiesz   [i] * 0.1f;
+// 	}
 
-*/
-// OMP + xsimd version
 
+// OMP + xsimd version Method2
 struct Rot
 {
     static constexpr unsigned get(unsigned i, unsigned n)
@@ -68,23 +70,7 @@ struct Rot
         return (i + n - 1) % n;
     }
 };
-// struct F2
-// {
-//     static constexpr unsigned get(unsigned i, unsigned n)
-//     {
-//         return 2.0;
-//     }
-// };
-// struct F01
-// {
-//     static constexpr unsigned get(unsigned i, unsigned n)
-//     {
-//         return 0.1;
-//     }
-// };
 const auto mask = xs::make_batch_constant<xs::batch<unsigned int, xs::avx2>, Rot>();
-// const auto f2 = xs::make_batch_constant<b_type, F2>();
-// const auto f01 = xs::make_batch_constant<b_type, F01>();
 #pragma omp parallel for
     for (int i = 0; i < n_particles; i += b_type::size)
     {	
@@ -165,8 +151,9 @@ const auto mask = xs::make_batch_constant<xs::batch<unsigned int, xs::avx2>, Rot
 		particles.y[i] += velocitiesy   [i] * 0.1f;
 		particles.z[i] += velocitiesz   [i] * 0.1f;
 	}
-}
 
+
+// OMP + xsimd version Method1
 // #pragma omp parallel for
 //     for (int i = 0; i < n_particles; i += b_type::size)
 //     {	
@@ -244,6 +231,6 @@ const auto mask = xs::make_batch_constant<xs::batch<unsigned int, xs::avx2>, Rot
 // 		particles.z[i] += velocitiesz   [i] * 0.1f;
 // 	}
 
-// }
+}
 
 #endif // GALAX_MODEL_CPU_FAST
